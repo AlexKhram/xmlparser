@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>XML parser</title>
+    <link rel="stylesheet" href="https://code.getmdl.io/1.2.1/material.amber-orange.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <script defer src="https://code.getmdl.io/1.2.1/material.min.js"></script>
+</head>
+<body>
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+            <span class="mdl-layout-title">XML parser</span>
+            <div class="mdl-layout-spacer"></div>
+            <nav class="mdl-navigation mdl-layout--large-screen-only">
+                <a class="mdl-navigation__link" href="/">Home</a>
+            </nav>
+        </div>
+    </header>
+    <main class="mdl-layout__content">
+        <div class="page-content">
+            <div class="mdl-grid" id="contentData">
+                <div class="mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--4-col-phone"></div>
+                <div class="mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--4-col-phone">
+                    <div class="mdl-shadow--6dp" align="center">
+                        <div class="mdl-dialog__content" id="message">To get data click "SHOW DATA"</div>
+                        <div class="mdl-card__actions mdl-card--border">
+                            <button type="button"
+                                    class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                                    onclick="getData('/get')">Show data
+                            </button>
+                            <button type="button"
+                                    class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"
+                                    onclick="getData('/parse')">Parse data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script>
+    function getData(path) {
+        if (path == '/get') {
+            showMessage('Please wait to loading data');
+        } else if (path == '/parse') {
+            showMessage('Please waite to parse data');
+        } else {
+            errorMessage('Something went wrong, try again later');
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', path, true);
+        xhr.send();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState != 4) return;
+            if (xhr.status == 200) {
+                if (path == '/get') {
+                    succesMessage('Data loaded');
+                } else if (path == '/parse') {
+                    succesMessage('Data parsed');
+                    return;
+                }
+                addDataToPage(xhr.responseText);
+            } else {
+                console.log(xhr.status, xhr.statusText);
+                errorMessage('Something went wrong, try again later');
+                return;
+            }
+        }
+    }
+
+    function showMessage(text) {
+        message.className = 'mdl-dialog__content';
+        message.innerHTML = text;
+    }
+    function succesMessage(text) {
+        message.className = 'mdl-dialog__content mdl-color-text--green-500';
+        message.innerHTML = text;
+    }
+    function errorMessage(text) {
+        message.className = 'mdl-dialog__content mdl-color-text--red-500';
+        message.innerHTML = text;
+    }
+
+    function addDataToPage(rawData) {
+        try {
+            if (typeof addedPays !== 'undefined') {
+                contentData.removeChild(addedPays);
+            }
+            var data = JSON.parse(rawData);
+            if (data.length == 0) {
+                errorMessage('Data is empty. Please parse data.');
+                return;
+            }
+
+            var table = document.createElement('table');
+            table.className = 'mdl-cell mdl-cell--12-col mdl-cell--8-col-tablet mdl-cell--4-col-phone mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--6dp';
+            table.id = 'addedPays';
+            var thead = document.createElement('thead');
+            var trHead = document.createElement('tr');
+            var thname = document.createElement('th');
+            thname.innerHTML = 'Name';
+            var thsurname = document.createElement('th');
+            thsurname.innerHTML = 'Surname';
+            var thAge = document.createElement('th');
+            thAge.innerHTML = 'Age';
+            var thPays = document.createElement('th');
+            thPays.innerHTML = 'Pays';
+            var thSucPays = document.createElement('th');
+            thSucPays.innerHTML = 'Success pays';
+            var thErPays = document.createElement('th');
+            thErPays.innerHTML = 'Error pays';
+
+            trHead.appendChild(thname);
+            trHead.appendChild(thsurname);
+            trHead.appendChild(thAge);
+            trHead.appendChild(thPays);
+            trHead.appendChild(thSucPays);
+            trHead.appendChild(thErPays);
+            thead.appendChild(trHead);
+            table.appendChild(thead);
+
+            var tbody = document.createElement('tbody');
+            for (var key in data) {
+                var tr = document.createElement('tr');
+                var tdName = document.createElement('td');
+                tdName.innerHTML = data[key].name;
+                var tdSurname = document.createElement('td');
+                tdSurname.innerHTML = data[key].surname;
+                var tdAge = document.createElement('td');
+                tdAge.innerHTML = data[key].age;
+                var tdPays = document.createElement('td');
+                tdPays.innerHTML = data[key].count_pays || 0;
+                var tdSucPays = document.createElement('td');
+                tdSucPays.innerHTML = data[key].success_pays || 0;
+                var tdErPays = document.createElement('td');
+                tdErPays.innerHTML = data[key].error_pays || 0;
+
+                tr.appendChild(tdName);
+                tr.appendChild(tdSurname);
+                tr.appendChild(tdAge);
+                tr.appendChild(tdPays);
+                tr.appendChild(tdSucPays);
+                tr.appendChild(tdErPays);
+
+                tbody.appendChild(tr);
+            }
+            table.appendChild(tbody);
+            contentData.appendChild(table);
+        }
+        catch
+            (err) {
+            console.log(err.message);
+            errorMessage('Can`t read data, try again later');
+            return;
+        }
+    }
+
+</script>
+</body>
+</html>
+
